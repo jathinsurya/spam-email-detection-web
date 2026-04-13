@@ -1,24 +1,21 @@
-# Spam Email Detection Web App
+# 🚀 Spam Email Detection Web App
 
-## Overview
+## 📌 Overview
 This project is a full-stack ML application that detects spam messages using NLP and machine learning.
 
-## Tech Stack
+## 🛠 Tech Stack
 - Python (Flask)
 - Scikit-learn
 - HTML, CSS
 
-## Features
+## 💡 Features
 - Real-time spam detection
 - Web interface for user input
 - ML model using TF-IDF + Naive Bayes
 
-## How to Run
-```bash
-pip install -r requirements.txt
-python app.py
----
-
+## 📊 Results
+- Accuracy: **96%**
+- Model: Naive Bayes
 
 ## 📸 Output
 
@@ -33,5 +30,9 @@ python app.py
 
 ### 💻 Terminal Output
 ![Terminal](outputs/terminal_output.png)
----
 
+## 🚀 How to Run
+
+```bash
+pip install -r requirements.txt
+python app.py
