@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spam Detector - Email Classifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="background-animation"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Spam Email Detector</h1>
+            <p class="subtitle">Check if your message is spam or legitimate</p>
+        </div>
+
+        <form method="POST">
+            <div class="form-group">
+                <label for="message">Enter your message:</label>
+                <textarea 
+                    id="message"
+                    name="message" 
+                    placeholder="Paste your email content, text, or message here..."
+                    required
+                    maxlength="1000"
+                ></textarea>
+                <div class="char-count"><span id="charCount">0</span>/1000</div>
+            </div>
+            
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">🔍 Analyze</button>
+                <button type="reset" class="btn btn-secondary">✖️ Clear</button>
+            </div>
+        </form>
+
+        {% if result %}
+            <div class="result-container {% if result.error %}error{% else %}{{ 'spam' if result.prediction == 1 else 'not-spam' }}{% endif %}">
+                {% if result.error %}
+                    <div class="result-message error-msg">⚠️ {{ result.error }}</div>
+                {% else %}
+                    <div class="result-badge {{ 'spam-badge' if result.prediction == 1 else 'safe-badge' }}">
+                        {{ result.result_text }}
+                    </div>
+                    <div class="confidence-section">
+                        <p class="confidence-label">Confidence Score:</p>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill {{ 'spam-color' if result.prediction == 1 else 'safe-color' }}" style="width: {{ result.confidence }}%"></div>
+                        </div>
+                        <p class="confidence-text">{{ result.confidence }}% confident</p>
+                    </div>
+                    <div class="result-explanation">
+                        {% if result.prediction == 1 %}
+                            <p>⚠️ This message appears to be <strong>SPAM</strong>. Be cautious!</p>
+                        {% else %}
+                            <p>✅ This message appears to be <strong>LEGITIMATE</strong>. Safe to read.</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <div class="history-section">
+            <h3>📋 Recent Analyses</h3>
+            <div id="historyList" class="history-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const messageInput = document.getElementById('message');
+        const charCount = document.getElementById('charCount');
+        const historyList = document.getElementById('historyList');
+
+        // Character counter
+        if (messageInput) {
+            messageInput.addEventListener('input', function() {
+                charCount.textContent = this.value.length;
+            });
+        }
+
+        // Load history from localStorage
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('spamHistory')) || [];
+            if (historyList) {
+                historyList.innerHTML = '';
+                if (history.length === 0) {
+                    historyList.innerHTML = '<p class="empty-history">No recent analyses</p>';
+                    return;
+                }
+                history.slice(-5).reverse().forEach((item) => {
+                    const div = document.createElement('div');
+                    div.className = `history-item ${item.prediction === 1 ? 'spam' : 'not-spam'}`;
+                    div.innerHTML = `
+                        <span class="history-result">${item.result_text}</span>
+                        <span class="history-confidence">${item.confidence}%</span>
+                    `;
+                    historyList.appendChild(div);
+                });
+            }
+        }
+
+        // Save to history on page load if result exists
+        document.addEventListener('DOMContentLoaded', function() {
+            const resultDiv = document.querySelector('.result-container');
+            if (resultDiv && !resultDiv.classList.contains('error')) {
+                const badgeText = resultDiv.querySelector('.result-badge')?.textContent || '';
+                const confidence = parseFloat(document.querySelector('.confidence-text')?.textContent) || 0;
+                const prediction = resultDiv.classList.contains('spam') ? 1 : 0;
+                
+                const history = JSON.parse(localStorage.getItem('spamHistory')) || [];
+                history.push({
+                    result_text: badgeText,
+                    confidence: confidence,
+                    prediction: prediction,
+                    timestamp: new Date().toLocaleTimeString()
+                });
+                localStorage.setItem('spamHistory', JSON.stringify(history.slice(-20)));
+            }
+            loadHistory();
+        });
+    </script>
+</body>
+</html>
